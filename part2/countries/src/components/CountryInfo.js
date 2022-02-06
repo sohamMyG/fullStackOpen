@@ -1,5 +1,6 @@
 import axios from "axios";
 import React,{useEffect,useState} from "react";
+import Weather from "./Weather";
 
 const CountryInfo = ({country}) => {
   const[weather,setWeather] = useState({})
@@ -7,6 +8,7 @@ const CountryInfo = ({country}) => {
   const capital=country.capital
   
   useEffect(()=> {
+    
     axios
     .get(`https://api.openweathermap.org/data/2.5/weather?q=${capital}&units=metric&appid=${api_key}`)
     .then((response)=>{
@@ -14,7 +16,7 @@ const CountryInfo = ({country}) => {
       
     })
   },[])
-  console.log(weather)
+  
   return(
     <div>
       <h2>{country.name.common}</h2>
@@ -29,6 +31,7 @@ const CountryInfo = ({country}) => {
       </ul>
       <img src={country.flags.png} alt="flag"></img>
       <h3>Weather in {capital}</h3>
+      <Weather weather={weather}/>
       {/* <div>temperature: {weather.main.feels_like} Celcius</div> */}
     </div>
   )
