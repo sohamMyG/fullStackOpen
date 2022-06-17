@@ -18,7 +18,7 @@ blogRouter.get('/:id', async (request, response) => {
     }
   })
 
-blogRouter.post('/', (request, response) => {
+blogRouter.post('/', async(request, response) => {
     const reqObj = request.body
     
     if(!(reqObj.hasOwnProperty('likes'))){
@@ -30,11 +30,9 @@ blogRouter.post('/', (request, response) => {
     else{
         const blog = new Blog(reqObj)
     
-        blog
-        .save()
-        .then(result => {
-        response.status(201).json(result)
-        })
+        const savedBlog = await blog.save()
+
+        response.status(201).json(savedBlog)
     }
 })
 
@@ -45,7 +43,7 @@ blogRouter.put('/:id',async(request,response)=>{
         title: body.title,
         author : body.author,
         url: body.url,
-        likes: body.likes
+        likes: body.likes,
     }
 
     const updatedBlog = await Blog
