@@ -9,6 +9,20 @@ const User = require('../models/user')
 
 const api = supertest(app)
 
+let authStr = "Bearer ";
+beforeAll(async() => {
+	await User.deleteMany({});
+
+	const username = "rambo", password = "wakkka";
+
+	const res = await api.post("/api/users").send({username, password, name : "rambi"});
+
+	const obj  = await api.post("/api/login").send({username, password});
+
+	authStr += obj.body.token;
+	for (const blog of helper.initialBlogs)
+		blog.user = res.body.id;
+});
 
 beforeEach(async () => {
     await Blog.deleteMany({})
@@ -48,7 +62,7 @@ describe('addition of a new note',()=>{
 			likes : 12
 		}
 		
-		await api.post('/api/blogs').send(newBlog).expect(201)
+		await api.post('/api/blogs').set("authorization", authStr).send(newBlog).expect(201)
 	
 		const blogsAtEnd = await helper.blogsInDb()
 		expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length + 1)
@@ -65,7 +79,7 @@ describe('addition of a new note',()=>{
 			url : 'https://www.theblogstarter.com/'
 		}
 	
-		const response = await api.post('/api/blogs').send(newBlog)
+		const response = await api.post('/api/blogs').set("authorization", authStr).send(newBlog)
 		expect(response.body.likes).toBe(0)
 	
 	})
@@ -76,7 +90,7 @@ describe('addition of a new note',()=>{
 			likes:0
 		}
 	
-		await api.post('/api/blogs').send(newBlog).expect(400)
+		await api.post('/api/blogs').set("authorization", authStr).send(newBlog).expect(400)
 	})
 })
 
@@ -86,6 +100,7 @@ describe('deletion of a note',()=>{
 		const blogToDelete = blogsAtStart[0]
 
 		await api.delete(`/api/blogs/${blogToDelete.id}`)
+				.set("authorization", authStr)
 				.expect(204)
 
 		const blogsAtEnd = await helper.blogsInDb()
@@ -102,6 +117,7 @@ describe('updation of a note',()=>{
 
 		await api
 			.put(`/api/blogs/${blogToUpdate.id}`)
+			.set("authorization", authStr)
 			.send(blogToUpdate)
 			.expect(200)
 		
@@ -206,6 +222,8 @@ describe('when there is initially one user in db', ()=>{
 		expect(usersAtEnd).toEqual(usersAtStart)
 	})
 })
+
+
 
 afterAll(() => {
     mongoose.connection.close()

@@ -1,3 +1,6 @@
+const _ = require('lodash')
+const blog = require('../models/blog')
+
 const dummy = (blogs) => {
     return 1
   }
@@ -27,8 +30,39 @@ const favoriteBlog = (blogs) => {
     return return_val
 } 
 
+const mostBlogs = (blogs) => {
+    const blogCount = _.countBy(blogs,(blog)=>blog.author)
+    let sorted = _.keysIn(blogCount).sort((a,b)=>blogCount[b]-blogCount[a])
+    return {
+        author: sorted[0],
+        blogs: blogCount[sorted[0]]
+      }
+}
+
+const mostLikes = blogs => {
+	const mp = new Map();
+
+	for (const blog of blogs){
+		const authorName = blog.author;
+		if (mp.has(authorName))
+			mp.set(authorName, mp.get(authorName) + blog.likes);
+		else
+			mp.set(authorName, blog.likes);
+	}
+
+	let maxLikes = 0, result = null;
+	for (const [k, v] of mp){
+		if (v > maxLikes){
+			result = {author: k, likes: v};
+			maxLikes = v;
+		}
+	}
+
+	return result;
+};
+
 module.exports = {
     dummy,
     totalLikes,
-    favoriteBlog
+    favoriteBlog,mostBlogs,mostLikes
 }
